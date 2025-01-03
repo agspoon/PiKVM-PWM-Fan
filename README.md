@@ -22,10 +22,10 @@ The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM contro
     KVMD_FAN_ARGS=" --speed-idle=40 --speed-low=50 --speed-high=90 --pwm-high=135 --temp-low=30 --temp-high=60"
 ```
 * Enable the kvmd-fan service at boot, and start it,
-
+```
     systemctl enable kvmd-fan.service
     systemctl start kvmd-fan.service
-
+```
 My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.  I went as far as modifying the kvmd-oled utility to add the current PWM duty cycle to the display (next to the temperature).
 
 TODO:
