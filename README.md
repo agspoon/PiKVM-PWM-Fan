@@ -11,19 +11,20 @@ The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM contro
 * Wire the GPIO pin of the fan controller to GPIO 12 of the RPi.  I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not really necessary unless you plan on using other GPIO pins on your PiKVM (there is a limit to the total current available to GPIO pins).
 
 * Modify /boot/config.txt to enable PWM on the correct GPIO pins to not interfear with other functions of the PiKVM
-
+```
     # PWM on GPIO-12
     dtoverlay=pwm-2chan,pin=12,func=4,pin2=13,func2=4
-
+```
 * Get/modify a version of kvmd-fan to "do the right thing".  The stock version does not properly configure the RPi PWM signal to be 25KHz, or "mark-space" mode.  It does not work well as a result.  There is a forked version on github here - https://github.com/agspoon/kvmd-fan.
 
 * Configure kvmd-fan with the following content in /etc/conf.h/kvmd-fan (tweak as needed).
-
+```
     KVMD_FAN_ARGS=" --speed-idle=40 --speed-low=50 --speed-high=90 --pwm-high=135 --temp-low=30 --temp-high=60"
-
-* Enable the kvmd-fan service at boot
+```
+* Enable the kvmd-fan service at boot, and start it,
 
     systemctl enable kvmd-fan.service
+    systemctl start kvmd-fan.service
 
 My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.  I went as far as modifying the kvmd-oled utility to add the current PWM duty cycle to the display (next to the temperature).
 
