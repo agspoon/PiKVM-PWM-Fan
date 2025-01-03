@@ -32,6 +32,7 @@ TODO:
 * reference pwm_mode branch of kvmd-fan fork
 * reference oled_fan_pwm branch of kvmd fork
 * add pictures of install, perhaps a schematic?
+* document adding --verbose or --debug arguments to kvmd-fan invocation
 * Clean up the following...
 
 With the 4b, you only really have two choices as to which set of PWM outputs to use; GPIO 12&13 or  GPIO 18&19 (pins 32&33, pins 12&35).  Don't confuse GPIO numbers with pin numbers.  https://www.electrorules.com/raspberry-pi-4-gpio-pnout
