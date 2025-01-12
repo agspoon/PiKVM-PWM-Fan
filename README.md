@@ -1,5 +1,11 @@
 # PiKVM-PWM-Fan - Adding PWM fan control to the Geekworm PiKVM-A3 kit
 
+TODO:
+* add OLED mods/images, with reference oled_fan_pwm branch of kvmd fork
+* add a schematic?
+* document adding --verbose or --debug arguments to kvmd-fan invocation
+* document adding wiringPi debug options
+
 The Geekworm [PiKVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
 
 The results were very satisfactory. This modification is probably applicable to most any PiKVM clone with a fan, or perhaps even the branded PiKVM devices. I don't have any, so I can't say for sure.
@@ -61,12 +67,6 @@ You can also read the socket with this curl command,
 ```
  curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
 ```
-
-TODO:
-* add OLED mods/images, with reference oled_fan_pwm branch of kvmd fork
-* add a schematic?
-* document adding --verbose or --debug arguments to kvmd-fan invocation
-* document adding wiringPi debug options
 
 ### Debugging
 
