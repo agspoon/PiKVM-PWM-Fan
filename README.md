@@ -12,7 +12,7 @@ The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM contro
 
 * Wire the GPIO pin of the fan controller to GPIO 12 of the RPi.  I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not really necessary unless you plan on using other GPIO pins on your PiKVM (there is a limit to the total current available to GPIO pins).
 
-[![GPIO_wire](images/GPIO_wire_thumb.png)](imgaes/GPIO_wire.png)   [![PWM Controller2](images/GPIO_resistor_thumb.png)](images/GPIO_resistor.png)
+[![GPIO_wire](images/GPIO_wire_thumb.png)](images/GPIO_wire.png)   [![PWM Controller2](images/GPIO_resistor_thumb.png)](images/GPIO_resistor.png)
 
 * Modify /boot/config.txt to enable PWM on the correct GPIO pins to not interfear with other functions of the PiKVM
 ```
