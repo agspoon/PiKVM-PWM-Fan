@@ -2,9 +2,6 @@
 
 TODO:
 * add OLED mods/images, with reference oled_fan_pwm branch of kvmd fork
-* add a schematic?
-* document adding --verbose or --debug arguments to kvmd-fan invocation
-* document adding wiringPi debug options WIRINGPI_DEBUG=1
 
 The Geekworm [PiKVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
 
@@ -22,7 +19,7 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
 
    I cut and modified the cable connecting the fan to the Hat, and wired in the fan controller between them.  You can tuck it all in right next to the fan on the hat.
 
-   [![PWM Controller1](images/PWM_wires_1_thumb.png)](images/PWM_wires_1.png)   [![PWM Controller2](images/PWM_wires_2_thumb.png)](images/PWM_wires_2.png)
+   [![PWM Controller1](images/PWM_wires_1_thumb.png)](images/PWM_wires_1.png)   [![PWM Controller2](images/PWM_wires_2_thumb.png)](images/PWM_wires_2.png)   [![EZFan2](images/EZFan2_thumb.png)](images/EZFan2.png)
 
 
 2. Wire the GPIO pin of the fan controller to GPIO 12 of the RPi.
@@ -127,4 +124,13 @@ If that's working, then you can try manually controlling the PWM signal.  Connec
     [root@pikvm pwm0]# echo 0 > unexport           (removes pwm0)
 
 If everything above works as expected, then my modified kvmd-fan service should control things as expected.
+
+You can watch how kvmd-fan is reacting by enabling debug mode to see all the state transitions. Stop the kvmd-fan service, and run it by hand with the desired options;
+```
+   /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+```
+You can add additional debug information from the WiringPi library by setting the WIRINGPI_DEBUG environment variable prior to invocation;
+```
+WIRINGPI_DEBUG=1 /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+```
 
