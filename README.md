@@ -1,8 +1,5 @@
 # PiKVM-PWM-Fan - Adding PWM fan control to the Geekworm PiKVM-A3 kit
 
-TODO:
-* add OLED mods/images, with reference oled_fan_pwm branch of kvmd fork
-
 The Geekworm [PiKVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
 
 The results were very satisfactory. This modification is probably applicable to most any PiKVM clone with a fan, or perhaps even the branded PiKVM devices. I don't have any, so I can't say for sure.
@@ -41,7 +38,7 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    
    The stock version of *kvmd-fan* runs the PWM signal in *balanced* mode, and a high (> 9MHz) signal on the PWM output pin. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
    
-   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode_freq* branch in the repo.
+   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode_freq). Note, you want the "*pwm_mode_freq*" branch in the repo.
 
 5. Configure kvmd-fan with the following content in /etc/conf.d/kvmd-fan (tweak as needed for your environment, and ears).
   
@@ -51,8 +48,8 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    ```
 6. Enable the kvmd-fan service at boot, and start it,
    ```
-    systemctl enable kvmd-fan.service
-    systemctl start kvmd-fan.service
+    [root@pikvm ~]# systemctl enable kvmd-fan.service
+    [root@pikvm ~]# systemctl start kvmd-fan.service
    ```
 My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.
 
@@ -69,12 +66,16 @@ If you don't see this, make sure "*/etc/kvmd/fan.ini*" contains the following st
 ```
 This UNIX socket is where *kvmd-fan* publishes the temperature and PWM fan state.  You can read it with the following command,
 ```
-   curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
+   [root@pikvm ~]# curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
 ```
 
 ### Software Mods
 
-Other than the kvmd-fan mods to make things work better, I wanted to see the PWM state on the OLED screen.  So I modified the kvmd-oled app to add the current PWM duty cycle to the display.
+Other than the kvmd-fan mods above to make the fan quieter and smoother, I wanted to see the PWM state on the OLED screen.  So I modified the kvmd-oled app to add the current PWM duty cycle to the display.
+
+   Cold  ![OLED_cold](images/OLED_cold_thumb.png)    Hot      ![OLED_hot](images/OLED_hot_thumb.png)
+   
+These changes are in a github **kvmd** fork here - [OLED Mod](https://github.com/agspoon/kvmd/tree/oled_fan_pwm/kvmd/apps/oled), but beware I'm not necessarily keeping this code up to date with the upstream changes. Though I will see if the maintainers would take some form of this change.
 
 ### Debugging
 
@@ -136,12 +137,12 @@ If that's working, then you can try manually controlling the PWM signal.  Connec
 
 If everything above works as expected, then my modified kvmd-fan service should control things as expected.
 
-You can watch how kvmd-fan is reacting by enabling debug mode to see all the state transitions. Stop the kvmd-fan service, and run it by hand with the desired options;
+You can watch how *kvmd-fan* is reacting, by enabling debug mode to see all the state transitions. Stop the *kvmd-fan* service, and run it by hand with the desired options;
 ```
-   /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+   [root@pikvm ~]# /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
 ```
 You can add additional debug information from the WiringPi library by setting the WIRINGPI_DEBUG environment variable prior to invocation;
 ```
-WIRINGPI_DEBUG=1 /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+   [root@pikvm ~]# WIRINGPI_DEBUG=1 /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
 ```
 
