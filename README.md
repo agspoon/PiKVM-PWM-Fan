@@ -46,7 +46,7 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    
    I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode_freq* branch in the repo.
 
-5. Configure kvmd-fan with the following content in /etc/conf.h/kvmd-fan (tweak as needed for your environment, and ears).
+5. Configure kvmd-fan with the following content in /etc/conf.d/kvmd-fan (tweak as needed for your environment, and ears).
   
    You will need to establish the lowest speed at which the fan will still spin reliably (*--speed-idle*).
    ```
