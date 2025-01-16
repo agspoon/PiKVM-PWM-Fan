@@ -14,7 +14,7 @@ The PiKVM-A3 uses a RPi-4b mainboard, and this modification is specific to that 
 
 ### Hardware Mods
 
-The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, so an intermediary component is required to provide the necessary current amplification.
+The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, and requires 5V instead of the GPIO 3.3V output. An intermediary component is required to provide the necessary voltage and current.
 
 I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-tiny-raspberry-pi-fan-controller), though there are probably more to choose from. This device is very small, and is easy to tuck into the tight space within the enclosure.
 
@@ -42,9 +42,9 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    ```
 4. Get/modify a version of kvmd-fan to "*do the right thing*".
    
-   The stock version of *kvmd-fan* runs the PWM signal at a low frequency (*~586Hz*) and in *smoothing* mode. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
+   The stock version of *kvmd-fan* runs the PWM signal in *balanced* mode, and a high (> 9MHz) signal on the PWM output pin. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
    
-   I made changes to increse the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode* branch in the repo.
+   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode_freq* branch in the repo.
 
 5. Configure kvmd-fan with the following content in /etc/conf.h/kvmd-fan (tweak as needed for your environment, and ears).
   
