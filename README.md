@@ -4,7 +4,7 @@ TODO:
 * add OLED mods/images, with reference oled_fan_pwm branch of kvmd fork
 * add a schematic?
 * document adding --verbose or --debug arguments to kvmd-fan invocation
-* document adding wiringPi debug options
+* document adding wiringPi debug options WIRINGPI_DEBUG=1
 
 The Geekworm [PiKVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
 
@@ -14,9 +14,9 @@ The PiKVM-A3 uses a RPi-4b mainboard, and this modification is specific to that 
 
 ### Hardware Mods
 
-The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, so an intermediary component is required to provide the necessary current amplification.
+The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, and requires 5V instead of the GPIO 3.3V output. An intermediary component is required to provide the necessary voltage and current.
 
-I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-tiny-raspberry-pi-fan-controller), though there are probably more to choose from. This device is very small, and is easy to tuck into the tight space within the enclosure.
+I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-tiny-raspberry-pi-fan-controller), though there are probably more to choose from. This device is very small, and is easy to tuck into the tight space within the enclosure. I ordered mine **with** headers, but no connector wires or heat-shrink.
 
 1. Re-wire the fan to go through the controller
 
@@ -42,11 +42,11 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    ```
 4. Get/modify a version of kvmd-fan to "*do the right thing*".
    
-   The stock version of *kvmd-fan* runs the PWM signal at a low frequency (*~586Hz*) and in *smoothing* mode. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
+   The stock version of *kvmd-fan* runs the PWM signal in *balanced* mode, and a high (> 9MHz) signal on the PWM output pin. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
    
-   I made changes to increse the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode* branch in the repo.
+   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [https://github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode). Note, you want the *pwm_mode_freq* branch in the repo.
 
-5. Configure kvmd-fan with the following content in /etc/conf.h/kvmd-fan (tweak as needed for your environment, and ears).
+5. Configure kvmd-fan with the following content in /etc/conf.d/kvmd-fan (tweak as needed for your environment, and ears).
   
    You will need to establish the lowest speed at which the fan will still spin reliably (*--speed-idle*).
    ```
