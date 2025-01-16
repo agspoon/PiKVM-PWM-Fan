@@ -54,16 +54,27 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
     systemctl enable kvmd-fan.service
     systemctl start kvmd-fan.service
    ```
-My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.  I even went as far as modifying the kvmd-oled utility to add the current PWM duty cycle to the display (*see below*).
+My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.
+
+You can see the status of the fan PWM state in the PiKVM UI, *System->About->Hardware*
+
+   ![PiKVMUI_About_HW](images/PiKVMUI_About_HW.png)
+   
+If you don't see this, make sure "*/etc/kvmd/fan.ini*" contains the following stanza,
+```
+   [server]
+   unix = /run/kvmd/fan.sock
+   unix_rm = 1
+   unix_mode = 666
+```
+This UNIX socket is where *kvmd-fan* publishes the temperature and PWM fan state.  You can read it with the following command,
+```
+   curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
+```
 
 ### Software Mods
 
-As for the kvmd-oled mod, it's pretty much a hack.  The kvmd-fan process creates a UNIX socket at "/run/kvmd/fan.sock".  This is used by the main kvmd process to read and publish values like temperature, fan speed, fan PWM, etc.  You can see this in the UI under "System->about->hardware".
-
-You can also read the socket with this curl command,
-```
- curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
-```
+Other than the kvmd-fan mods to make things work better, I wanted to see the PWM state on the OLED screen.  So I modified the kvmd-oled app to add the current PWM duty cycle to the display.
 
 ### Debugging
 
