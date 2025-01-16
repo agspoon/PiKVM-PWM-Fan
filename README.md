@@ -8,7 +8,7 @@ The PiKVM-A3 uses a RPi-4b mainboard, and this modification is specific to that 
 
 ### Hardware Mods
 
-The 30mm fan that comes with the kit is a 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, and requires 5V instead of the GPIO 3.3V output. An intermediary component is required to provide the necessary voltage and current.
+The 30mm fan that comes with the kit is a 5V 2-wire fan, so implementing PWM control is not as simple as connecting it to the RPi PWM control interface. The fan sinks more current than is safely available from the RPi GPIO drivers, and requires 5V instead of the GPIO 3.3V output. An intermediary component is required to provide the necessary voltage and current.
 
 I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-tiny-raspberry-pi-fan-controller), though there are probably more to choose from. This device is very small, and is easy to tuck into the tight space within the enclosure. I ordered mine **with** headers, but no connector wires or heat-shrink.
 
@@ -18,10 +18,9 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
 
    [![PWM Controller1](images/PWM_wires_1_thumb.png)](images/PWM_wires_1.png)   [![PWM Controller2](images/PWM_wires_2_thumb.png)](images/PWM_wires_2.png)   [![EZFan2](images/EZFan2_thumb.png)](images/EZFan2.png)
 
+2. Wire the GPIO pin of the EZFan controller to GPIO 12 of the RPi.
 
-2. Wire the GPIO pin of the fan controller to GPIO 12 of the RPi.
-
-   I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not totally necessary unless you plan on using other GPIO pins on your PiKVM (there is a limit to the total current available to GPIO pins).
+   I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not totally necessary unless you plan on using other GPIO pins on your PiKVM (there is a limit to the total current available to all GPIO pins). Note, at these higher frequencies you have to consider the *AC* current draw through the parasitic capacitance across the Gate to Drain/Source of the EZFan transistor.
 
    [![GPIO_wire](images/GPIO_wire_thumb.png)](images/GPIO_wire.png)   [![PWM Controller2](images/GPIO_resistor_thumb.png)](images/GPIO_resistor.png)
 
@@ -36,11 +35,11 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
    ```
 4. Get/modify a version of kvmd-fan to "*do the right thing*".
    
-   The stock version of *kvmd-fan* runs the PWM signal in *balanced* mode, and a high (> 9MHz) signal on the PWM output pin. This results in a lot of acoustic noise due to the constant acceleration/deceleration (for the two fans I tried).
+   The stock version of *kvmd-fan* runs the PWM signal in *balanced* mode, and a high (> 9MHz) signal on the PWM output pin. This results in a lot of acoustic noise (for the two fans I tried).
    
-   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enable *mark-space* mode which produces a uniform square-wave. My modified version is available here on github - [github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode_freq). Note, you want the "*pwm_mode_freq*" branch in the repo.
+   I made changes to set the frequency to *~25KHz* (industry standard for small fans), and enabled *mark-space* mode which produces a uniform square-wave. My modified version is available here - [github.com/agspoon/kvmd-fan](https://github.com/agspoon/kvmd-fan/tree/pwm_mode_freq). Note, you want the "*pwm_mode_freq*" branch in my forked repo.
 
-5. Configure kvmd-fan with the following content in /etc/conf.d/kvmd-fan (tweak as needed for your environment, and ears).
+5. Configure kvmd-fan with the following content in /etc/conf.d/kvmd-fan (tweak as needed for your fan, environment, and ears).
   
    You will need to establish the lowest speed at which the fan will still spin reliably (*--speed-idle*).
    ```
@@ -51,23 +50,24 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
     [root@pikvm ~]# systemctl enable kvmd-fan.service
     [root@pikvm ~]# systemctl start kvmd-fan.service
    ```
-My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed.
-
+   
 You can see the status of the fan PWM state in the PiKVM UI, *System->About->Hardware*
 
    ![PiKVMUI_About_HW](images/PiKVMUI_About_HW.png)
    
-If you don't see this, make sure "*/etc/kvmd/fan.ini*" contains the following stanza,
+If you don't see this, make sure "*/etc/kvmd/fan.ini*" contains the following stanza, and is referenced in the "*kvmd-fan*" service file ("*--config=*")
 ```
    [server]
    unix = /run/kvmd/fan.sock
    unix_rm = 1
    unix_mode = 666
 ```
-This UNIX socket is where *kvmd-fan* publishes the temperature and PWM fan state.  You can read it with the following command,
+This UNIX socket is where *kvmd-fan* publishes the temperature and PWM fan state   You can read it with the following command,
 ```
    [root@pikvm ~]# curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
 ```
+My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed. Enjoy the peace and quiet! :)
+
 
 ### Software Mods
 
@@ -75,13 +75,13 @@ Other than the kvmd-fan mods above to make the fan quieter and smoother, I wante
 
    Cold  ![OLED_cold](images/OLED_cold_thumb.png)    Hot      ![OLED_hot](images/OLED_hot_thumb.png)
    
-These changes are in a github **kvmd** fork here - [OLED Mod](https://github.com/agspoon/kvmd/tree/oled_fan_pwm/kvmd/apps/oled), but beware I'm not necessarily keeping this code up to date with the upstream changes. Though I will see if the maintainers would take some form of this change.
+These changes are in my github **kvmd** fork here - [OLED Mod](https://github.com/agspoon/kvmd/tree/oled_fan_pwm/kvmd/apps/oled), but beware I'm not necessarily keeping this code up to date with the upstream changes. Though I will see if the maintainers would take some form of this change.
 
 ### Debugging
 
-First steps are to make sure that the PWM controller is working correctly.  If you connect the PWM *signal* wire that would normally go to GPIO 12 to **GND** (or leave floating) the fan should stop.  If connected to **3.3v** (*pin 1*) it should spin at full speed.
+First steps are to make sure that the PWM controller is working correctly.  If you connect the EZFan GPIO *signal* wire, that would normally go to GPIO 12, to **GND** (or leave floating) the fan should stop.  If connected to **3.3v** (e.g. RPi *pin 1*) it should spin at full speed.
 
-If that's working, then you can try manually controlling the PWM signal.  Connect the controller to GPIO 12, and stop the kvmd-fan service (systemctl stop kvmd-fan).  Then use the sysfs interface to change the signal as follows, [pwm.txt](https://www.kernel.org/doc/Documentation/pwm.txt)
+If that's working, then you can try manually controlling the PWM signal through the Linux PWM sysfs interface.  Connect the EZFan controller to GPIO 12, and stop the kvmd-fan service ("*systemctl stop kvmd-fan*").  Then use the sysfs interface to modify the PWM signal as follows, [pwm.txt](https://www.kernel.org/doc/Documentation/pwm.txt)
 
     [root@pikvm ~]# cd /sys/class/pwm/pwmchip0
 
@@ -101,7 +101,7 @@ If that's working, then you can try manually controlling the PWM signal.  Connec
     total 0
     lrwxrwxrwx 1 root root    0 Jan 28 07:39 device -> ../../../fe20c000.pwm
     drwxr-xr-x 2 root root    0 Jan 28 07:39 power
-    drwxr-xr-x 3 root root    0 Jan 28 07:40 pwm0
+    drwxr-xr-x 3 root root    0 Jan 28 07:40 pwm0      (new controller)
     lrwxrwxrwx 1 root root    0 Jan 28 07:39 subsystem -> ../../../../../../class/pwm
     --w------- 1 root root 4096 Jan 28 07:40 export
     -r--r--r-- 1 root root 4096 Jan 28 07:39 npwm
@@ -135,14 +135,13 @@ If that's working, then you can try manually controlling the PWM signal.  Connec
     [root@pikvm pwm0]# cd ..
     [root@pikvm pwm0]# echo 0 > unexport           (removes pwm0)
 
-If everything above works as expected, then my modified kvmd-fan service should control things as expected.
+If everything above works as expected, then my modified *kvmd-fan* app should control things as expected.
 
-You can watch how *kvmd-fan* is reacting, by enabling debug mode to see all the state transitions. Stop the *kvmd-fan* service, and run it by hand with the desired options;
+You can watch how *kvmd-fan* is reacting, by enabling Debug mode to see all the state transitions. Stop the *kvmd-fan* service, and run it by hand with the desired options;
 ```
-   [root@pikvm ~]# /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+   [root@pikvm ~]# /usr/bin/kvmd-fan --debug --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60
 ```
 You can add additional debug information from the WiringPi library by setting the WIRINGPI_DEBUG environment variable prior to invocation;
 ```
-   [root@pikvm ~]# WIRINGPI_DEBUG=1 /usr/bin/kvmd-fan --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60 --debug
+   [root@pikvm ~]# WIRINGPI_DEBUG=1 /usr/bin/kvmd-fan --debug --speed-idle=40 --speed-low=50 --speed-high=90 --temp-low=30 --temp-high=60
 ```
-
