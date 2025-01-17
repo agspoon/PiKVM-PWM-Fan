@@ -66,7 +66,7 @@ This UNIX socket is where *kvmd-fan* publishes the temperature and PWM fan state
 ```
    [root@pikvm ~]# curl -s --unix-socket /run/kvmd/fan.sock http://localhost/state
 ```
-My A3 based PiKVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed. Enjoy the peace and quiet! :)
+My A3 based KVM now sits next to me, and is nearly silent.  It will spin up if it has to work hard, but almost never runs at full speed. Enjoy the peace and quiet! :)
 
 
 ### Software Mods
