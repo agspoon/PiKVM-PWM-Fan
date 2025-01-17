@@ -1,10 +1,10 @@
-# PiKVM-PWM-Fan - Adding PWM fan control to the Geekworm PiKVM-A3 kit
+# PiKVM-PWM-Fan - Adding PWM fan control to the Geekworm KVM-A3 kit
 
-The Geekworm [PiKVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for a true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
+The Geekworm [KVM-A3](https://geekworm.com/products/pikvm-a3) kit includes a 30mm fan integrated into the X630-A3 Hat. The fan is hard-wired to 5V, and runs continuosly at full speed. It's not too noisy, but it's not too quiet either - certainly in my quite office space. I looked for a true PWM controlled 30mm fan, but was unsuccessful, so I set out to convert it to a PWM controlled fan that would track the CPU temperature and spin accordingly.
 
 The results were very satisfactory. This modification is probably applicable to most any PiKVM clone with a fan, or perhaps even the branded PiKVM devices. I don't have any, so I can't say for sure.
 
-The PiKVM-A3 uses a RPi-4b mainboard, and this modification is specific to that board, but could be tweaked to work with other RPi boards.
+The KVM-A3 uses a RPi-4b mainboard, and this modification is specific to that board, but could be tweaked to work with other RPi boards.
 
 ### Hardware Mods
 
@@ -20,13 +20,13 @@ I settled on the [EZ Fan2](https://www.tindie.com/products/jeremycook/ez-fan2-ti
 
 2. Wire the GPIO pin of the EZFan controller to GPIO 12 of the RPi.
 
-   I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not totally necessary unless you plan on using other GPIO pins on your PiKVM (there is a limit to the total current available to all GPIO pins). Note, at these higher frequencies you have to consider the *AC* current draw through the parasitic capacitance across the Gate to Drain/Source of the EZFan transistor.
+   I used a 100 ohm resistor in series to limit the current draw from the RPi GPIO pin, but that's not totally necessary unless you plan on using other GPIO pins on your KVM (there is a limit to the total current available to all GPIO pins). Note, at these higher frequencies you have to consider the *AC* current draw through the parasitic capacitance across the Gate to Drain/Source of the EZFan transistor.
 
    [![GPIO_wire](images/GPIO_wire_thumb.png)](images/GPIO_wire.png)   [![PWM Controller2](images/GPIO_resistor_thumb.png)](images/GPIO_resistor.png)
 
 3. Modify */boot/config.txt* to enable PWM
 
-    With the 4b, you only have two choices as to which set of PWM outputs to use; GPIO **12&13** or GPIO **18&19** (*pins 32&33, pins 12&35*). For the Geekworm PiKVM hat, GPIO 18 is already used (for audio I belive), so that leaves only 12&13.
+    With the 4b, you only have two choices as to which set of PWM outputs to use; GPIO **12&13** or GPIO **18&19** (*pins 32&33, pins 12&35*). For the Geekworm KVM-A3 hat, GPIO 18 is already used (for audio I belive), so that leaves only 12&13.
    
    I chose pin **12** (*pin #32 PWM0*), as that's the default for kvmd-fan. Don't confuse GPIO numbers with pin numbers.  [RPi-4 pinout](https://www.electrorules.com/raspberry-pi-4-gpio-pnout)
    ```
